@@ -55,7 +55,7 @@ const handleDocumentUpload = async (req) => {
         const compiledConvert = compile({ wordwrap: 130 });
         const loader = new RecursiveUrlLoader(url, {
             extractor: compiledConvert,
-            maxDepth:2,
+            maxDepth:1,
             excludeDirs: ["/docs/api/"],
         });
         docs = (await loader.load()).map((d) => ({
