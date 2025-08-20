@@ -10,7 +10,7 @@ export const useLoadingWithRefresh = () => {
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        const response = await axios.get("/api/v1/auth/me", {
+        const response = await axios.get("http://localhost:8000/api/v1/auth/me", {
           withCredentials: true,
         });
         loginUser(response.data);
