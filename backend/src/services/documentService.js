@@ -144,7 +144,7 @@ const handleDocumentUpload = async (req) => {
     // Generating Summary and title of the chat based on data
 
     const combinedText = docs
-        .slice(0, 3)
+        .slice(0, 2)
         .map((d) => d.pageContent)
         .join("\n\n");
 
