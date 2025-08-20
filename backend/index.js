@@ -3,6 +3,7 @@ import { app } from "./src/app.js";
 import connectDB from "./src/config/mongoDB.config.js";
 import { ensureQdrantSetup } from "./src/config/qdrantDB.config.js";
 import path from "path";
+import express from "express";
 
 ensureQdrantSetup()
     .then(() => {
