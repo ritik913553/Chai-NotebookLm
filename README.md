@@ -10,7 +10,7 @@ The backend is built with **Node.js + Express + MongoDB**, and the frontend (Rea
 [Click here to view the live app](https://chai-notebooklm.onrender.com/)
 
 ## Demo
-[Click here to view the youtube video](https://chai-notebooklm.onrender.com/)
+[Click here to view the youtube video](https://www.youtube.com/watch?v=cKSowU8JHuQ)
 
 ## 🚀 Features
 
@@ -69,7 +69,7 @@ backend/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/notebooklm.git
+   git clone https://github.com/ritik913553/Chai-NotebookLm
    cd notebooklm/backend
 
 
