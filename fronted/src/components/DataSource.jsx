@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { uploadDataSource } from "../http/index.js";
+import { deleteChat, getAllChat, uploadDataSource } from "../http/index.js";
 import {
     FileText,
     FileSpreadsheet,
@@ -19,6 +19,7 @@ const DataSource = ({
     setIsAddDataSourceOpen,
     setSelectedChat,
     selectedChat,
+    setchats,
 }) => {
     const [text, setText] = useState("");
     const [link, setLink] = useState("");
@@ -26,6 +27,8 @@ const DataSource = ({
     const [type, setType] = useState("");
     const [linkOpen, setLinkOpen] = useState("");
     const [loading, setLoading] = useState(false);
+    const [openChatMenuId, setOpenChatMenuId] = useState(null);
+    const [deleteLoaderId, setDeleteLoaderId] = useState(null);
 
     const formSubmitHandler = async (e) => {
         e.preventDefault();
@@ -45,16 +48,46 @@ const DataSource = ({
             const res = await uploadDataSource(data);
             toast.success("Data Source Uploaded Successfully");
             setSelectedChat(res.data.chat);
+
+            const updatedChats = await getAllChat();
+            setchats(updatedChats.data);
+            if (chats?.length == 0) {
+                setIsAddDataSourceOpen(true);
+            }
+
             setLoading(false);
             setIsAddDataSourceOpen(false);
         } catch (err) {
+            setLoading(false);
+            toast.error("Failed to Upload Data Source");
             console.log(err);
+        }
+    };
+
+    const deleteChatHandler = async (id) => {
+        try {
+            setOpenChatMenuId(null);
+            setDeleteLoaderId(id);
+            const res = await deleteChat(id);
+            toast.success("Chat Deleted Successfully");
+
+            const updatedChats = await getAllChat();
+            console.log("Updated Chats:", updatedChats);
+            setchats(updatedChats.data);
+            setDeleteLoaderId(null);
+
+            if (chats.length == 0) {
+                setIsAddDataSourceOpen(true);
+            }
+        } catch (error) {
+            setDeleteLoaderId(null);
+            toast.error("Failed to delete chat");
         }
     };
     console.log("Selected Chat:", selectedChat);
 
     return (
-        <div className="w-1/4 shadow-[5px_5px_5px_0px_rgba(0,0,0,0.6)] bg-black h-full rounded-2xl">
+        <div className="w-1/4  shadow-[5px_5px_5px_0px_rgba(0,0,0,0.6)] bg-black h-full rounded-2xl">
             {!isAddDataSourceOpen ? (
                 <div className="h-full">
                     <h1 className="px-5 py-2 text-white/60">
@@ -63,10 +96,10 @@ const DataSource = ({
                     <hr className="text-gray-500" />
                     <div className="flex justify-between flex-col p-5 h-full pb-20 ">
                         <div className="flex flex-col gap-3 flex-1">
-                            {chats.map((chat, index) => (
+                            {chats?.map((chat, index) => (
                                 <div
                                     onClick={() => setSelectedChat(chat)}
-                                    className={`py-2 px-3 hover:bg-[#212121] cursor-pointer text-white/80 flex gap-x-3 text-sm rounded-xl justify-between ${
+                                    className={`relative py-2 px-3 hover:bg-[#212121] cursor-pointer text-white/80 flex gap-x-3 text-sm rounded-xl justify-between ${
                                         selectedChat?._id === chat._id
                                             ? "bg-[#212121]"
                                             : ""
@@ -77,9 +110,71 @@ const DataSource = ({
                                         <Bot size={18} />
                                         <p>{chat.title}</p>
                                     </div>
-                                    <span>
+
+                                    <span
+                                        className={`${
+                                            chat._id == deleteLoaderId
+                                                ? "hidden"
+                                                : "block"
+                                        }`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenChatMenuId(
+                                                openChatMenuId === chat._id
+                                                    ? null
+                                                    : chat._id // toggle
+                                            );
+                                        }}
+                                    >
                                         <EllipsisVertical size={18} />
                                     </span>
+
+                                    {deleteLoaderId === chat._id && (
+                                        <button
+                                            type="button"
+                                            className="relative i"
+                                            disabled
+                                        >
+                                            <span className="relative  py-1 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                                                <svg
+                                                    className="animate-spin -mt-5 mr-3 h-5 w-5 text-white"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    />
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                    )}
+
+                                    {/* Dropdown */}
+                                    {openChatMenuId === chat._id && (
+                                        <div className="absolute right-0 mt-7 w-48 border-black bg-[#212121] rounded-lg shadow-[0_4px_8px_rgba(0,0,0,0.8)] border px-5 py-7 z-50">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteChatHandler(chat._id);
+                                                    // setOpenChatMenuId(null);
+                                                }}
+                                                className="mt-7 w-full cursor-pointer bg-red-500 text-white py-1 rounded-md hover:bg-red-600 transition"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -108,7 +203,7 @@ const DataSource = ({
                         </span>
                     </div>
                     <hr className="text-gray-500" />
-                    <div className="p-5 h-full flex flex-col gap-y-5">
+                    <div className=" chat-scrollbar  p-5 h-[90%] overflow-auto flex flex-col gap-y-5">
                         <div className=" custom-scrollbar border border-gray-700  h-[40%] w-full bg-[#212121] rounded-xl">
                             <textarea
                                 value={text}

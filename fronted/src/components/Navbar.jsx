@@ -27,7 +27,7 @@ const Navbar = ({}) => {
                 {/* Avatar */}
                 <button
                     onClick={() => setOpen(!open)}
-                    className="w-10 h-10 rounded-full cursor-pointer bg-indigo-500 text-white flex items-center justify-center font-semibold uppercase"
+                    className="w-10 h-10 rounded-full cursor-pointer bg-green-500 border-2 border-white/60  text-white flex items-center justify-center font-semibold uppercase"
                 >
                     {user?.name?.[0] || "U"}
                 </button>

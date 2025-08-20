@@ -23,3 +23,9 @@ export const uploadDataSource = async (data) =>
 
 export const sendMessage = async (data) =>
     await api.post("/notebook/upload/chat", data);
+
+export const getAChat = async (id) =>
+    await api.get(`/notebook/chats/${id}`);
+
+export const deleteChat = async (id) =>
+    await api.delete(`/notebook/chats/${id}`);

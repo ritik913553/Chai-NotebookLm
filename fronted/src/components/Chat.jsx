@@ -1,11 +1,16 @@
 import { Send } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { getAllMessageOfPArticularChat, sendMessage } from "../http";
+import { getAChat, getAllMessageOfPArticularChat, sendMessage } from "../http";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { useAuth } from "../context/AuthContext";
 import ChatLoader from "./ChatLoader";
-const Chat = ({ chats, selectedChat, setIsAddDataSourceOpen }) => {
+const Chat = ({
+    chats,
+    selectedChat,
+    setSelectedChat,
+    setIsAddDataSourceOpen,
+}) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [messageContent, setMessageContent] = useState("");
@@ -36,21 +41,22 @@ const Chat = ({ chats, selectedChat, setIsAddDataSourceOpen }) => {
             messagesRef.current.scrollBehavior = "smooth";
         }
     }, [messages]);
-    const handleSendMessage = async (e) => {
+    const handleSendMessage = async (e, customMessage) => {
         e.preventDefault();
-        if (!messageContent.trim()) {
+        const finalMessage = customMessage || messageContent;
+        if (!finalMessage.trim()) {
             toast.error("Message cannot be empty");
             return;
         }
         setMessages((prev) => [
             ...prev,
-            { content: messageContent, sender: "user", createdAt: new Date() },
+            { content: finalMessage, sender: "user", createdAt: new Date() },
         ]);
         try {
             setChatLoading(true);
             const res = await sendMessage({
                 chatId: selectedChat._id,
-                content: messageContent,
+                content: finalMessage,
             });
             console.log(res.data);
             setMessages((prev) =>
@@ -62,16 +68,22 @@ const Chat = ({ chats, selectedChat, setIsAddDataSourceOpen }) => {
                 })
             );
             setMessages((prev) => [...prev, res.data.assistantMessage]);
+
+            const updatedChat = await getAChat(selectedChat._id);
+            setSelectedChat(updatedChat.data);
+
             setChatLoading(false);
             setMessageContent("");
-        } catch (error) {}
+        } catch (error) {
+            setChatLoading(false);
+            console.log(error);
+        }
     };
 
-    console.log(messages);
 
     return (
         <div className="w-3/4 shadow-[0px_5px_5px_0px_rgba(0,0,0,0.6)] bg-black h-full overflow-hidden rounded-2xl">
-            {chats.length > 0 ? (
+            {chats?.length > 0 ? (
                 selectedChat ? (
                     <div className="h-full flex flex-col ">
                         <div className="h-12 bg-black text-white/60">
@@ -148,7 +160,7 @@ const Chat = ({ chats, selectedChat, setIsAddDataSourceOpen }) => {
                         </div>
                         <div className="p-5">
                             <div className="h-24 bg-transparent border border-white/20 rounded-xl ">
-                                <div className="flex items-center justify-between px-5">
+                                <div className="flex  items-center justify-between px-5">
                                     <input
                                         type="text"
                                         value={messageContent}
@@ -164,6 +176,24 @@ const Chat = ({ chats, selectedChat, setIsAddDataSourceOpen }) => {
                                     >
                                         <Send size={20} />
                                     </button>
+                                </div>
+                                <div className="flex items-center overflow-auto gap-x-5 px-5 mt-2">
+                                    {selectedChat.similarQuestions &&
+                                        selectedChat.similarQuestions.length >
+                                            0 &&
+                                        selectedChat.similarQuestions.map(
+                                            (question, index) => (
+                                                <div>
+                                                    <p
+                                                        key={index}
+                                                        className="text-xs border-1 px-2 py-1 rounded-lg border-white/20 text-white/60 cursor-pointer hover:text-white/80 hover:scale-102 transform duration-120"
+                                                        onClick={(e) => handleSendMessage(e, question)}
+                                                    >
+                                                        {question}
+                                                    </p>
+                                                </div>
+                                            )
+                                        )}
                                 </div>
                             </div>
                         </div>

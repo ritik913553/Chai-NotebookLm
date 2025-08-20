@@ -83,10 +83,12 @@ const Dashboard = () => {
                     setIsAddDataSourceOpen={setIsAddDataSourceOpen}
                     setSelectedChat={setSelectedChat}
                     selectedChat={selectedChat}
+                    setchats={setchats}
                   
                 />
                 <Chat
                     selectedChat={selectedChat}
+                    setSelectedChat={setSelectedChat}
                     chats={chats}
                     setIsAddDataSourceOpen={setIsAddDataSourceOpen}
                 />

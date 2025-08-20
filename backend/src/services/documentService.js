@@ -6,11 +6,10 @@ import { compile } from "html-to-text";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { client, COLLECTION_NAME } from "../config/qdrantDB.config.js";
-import OpenAI from 'openai'
+import OpenAI from "openai";
 
 import { File } from "../models/files.model.js";
 import { Chat } from "../models/chats.model.js";
-
 
 const openai = new OpenAI();
 
@@ -21,10 +20,10 @@ const handleDocumentUpload = async (req) => {
     if (!type || !["text", "url", "pdf", "docx", "csv"].includes(type)) {
         throw new Error("Invalid or missing type");
     }
-    console.log("Type:",type);
-    console.log("Url:",url);
-    console.log("Text:",text);
-    console.log("File:",req.file);
+    console.log("Type:", type);
+    console.log("Url:", url);
+    console.log("Text:", text);
+    console.log("File:", req.file);
 
     let docs = [];
 
@@ -58,7 +57,7 @@ const handleDocumentUpload = async (req) => {
         const compiledConvert = compile({ wordwrap: 130 });
         const loader = new RecursiveUrlLoader(url, {
             extractor: compiledConvert,
-            maxDepth: 1,
+            maxDepth: 3,
             excludeDirs: ["/docs/api/"],
         });
         docs = (await loader.load()).map((d) => ({
@@ -126,7 +125,7 @@ const handleDocumentUpload = async (req) => {
         .join("\n\n");
 
     const SYSTEM_PROMPT = `
-        You are an expert ai assistant that generates short summary and concise chat title for the uploaded document."
+        You are an expert ai assistant that generates short summary and concise chat title and also 2 similar questions  for the uploaded document."
     `;
     const response = await openai.chat.completions.create({
         model: "gpt-4.1-mini",
@@ -134,19 +133,23 @@ const handleDocumentUpload = async (req) => {
             { role: "system", content: SYSTEM_PROMPT },
             {
                 role: "user",
-                content: `Here is the document content:\n\n${combinedText}\n\nReturn JSON with fields 'summary' and 'title'.`,
+                content: `Here is the document content:\n\n${combinedText}\n\nReturn JSON with fields 'summary' ,'similarQuestions' and 'title'.
+                similarQuestions should be an array of 2 questions that are similar to the content of the document.
+                `,
             },
         ],
     });
 
     const assistantMessage = response.choices[0].message.content;
-    const { summary, title } = JSON.parse(assistantMessage);
+    const { summary, title,similarQuestions } = JSON.parse(assistantMessage);
+    
     await Chat.updateOne(
         { _id: chat._id },
         {
             $set: {
-                summary:summary || "",
+                summary: summary || "",
                 title: title || "",
+                similarQuestions: similarQuestions || [],
             },
         }
     );
@@ -155,7 +158,7 @@ const handleDocumentUpload = async (req) => {
         success: true,
         message: "Document stored successfully",
         fileId: file._id,
-        chat
+        chat,
     };
 };
 
