@@ -11,6 +11,10 @@ ensureQdrantSetup()
         console.error("Error setting up Qdrant:", err);
     });
 
+
+
+
+    
 connectDB()
     .then(() => {
         app.listen(process.env.PORT || 8000, () => {

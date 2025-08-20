@@ -24,6 +24,15 @@ app.use(
 );
 
 
+// -------------------code for deployment -------------------------
+if (process.env.NODE_ENV === "production") {
+  const dirPath = path.resolve();
+  app.use(express.static("./fronted/dist"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(dirPath, "./fronted/dist", "index.html"));
+  });
+}
+
 
 
 
