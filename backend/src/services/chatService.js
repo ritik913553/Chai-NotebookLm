@@ -44,17 +44,29 @@ const handleUserMessage = async ({ userId, chatId, content }) => {
     const context = results.map((r) => r.pageContent).join("\n\n");
 
     const SYSTEM_PROMPT = `
-    You are a helpful assistant. Use the following context from the user's document(s) to answer their question.Also generates the 2 most similar questions. If context is missing, say you don't know.\n\nContext:\n${context}
+        You are a helpful assistant. Use the following context from the user's document(s) to answer their question. Also generate the 2 most similar questions. 
+        If context is missing, say you don't know.
 
-    Rules:
-    1. Always answer based on the provided context.
-    2. If the context does not provide enough information, say "It is not clear from the provided context."
-    3.Always return json with fields 'answer' and 'similarQuestions'.
+        Context:
+        ${context}
 
-    Example response:
-    { "answer": "The answer to the user's question based on the context.",
-    "similarQuestions": ["What is the main topic of the document?", "How does this relate to the user's question?"] }   
+        Rules:
+        1. Always answer based on the provided context.
+        2. If the context does not provide enough information, say "It is not clear from the provided context."
+        3. Always return a JSON object with fields 'answer' and 'similarQuestions'.
+        4. For **bold text**, wrap with <b>...</b>.
+        5. For links, always return valid HTML anchor tags, e.g. <a href="https://www.youtube.com/@piyushgargdev" target="_blank">Piyush Garg</a>.
+        6. If the answer includes code, format it with <pre><code> ... </code></pre>.
+        7. Do not include explanations outside of JSON.
 
+        Example response:
+        {
+        "answer": "Here is an <b>important</b> point. You can also check <a href='https://www.youtube.com/@piyushgargdev' target='_blank'>Piyush Garg</a>. For code:\n<pre><code>console.log('Hello World');</code></pre>",
+        "similarQuestions": [
+            "What is the main topic of the document?",
+            "How does this relate to the user's question?"
+        ]
+        }
     `;
 
     const response = await openai.chat.completions.create({
@@ -85,7 +97,6 @@ const handleUserMessage = async ({ userId, chatId, content }) => {
             },
         }
     );
-   
 
     // 6️⃣ Return both
     return {

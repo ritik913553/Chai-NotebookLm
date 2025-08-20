@@ -74,7 +74,7 @@ const Dashboard = () => {
     }, []);
 
     return (
-        <div className="h-screen overflow-hidden w-full bg-[#212121] text-white">
+        <div className="h-screen overflow-hidden w-full bg-[#212121] text-white pb-5">
             <Navbar />
             <div className="flex gap-5 h-[90%] px-5">
                 <DataSource

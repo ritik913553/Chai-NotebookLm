@@ -80,7 +80,6 @@ const Chat = ({
         }
     };
 
-
     return (
         <div className="w-3/4 shadow-[0px_5px_5px_0px_rgba(0,0,0,0.6)] bg-black h-full overflow-hidden rounded-2xl">
             {chats?.length > 0 ? (
@@ -96,7 +95,7 @@ const Chat = ({
                         >
                             {/* Summary */}
                             <div className="flex items-center mb-10 ">
-                                <div className="bg-transparent mt-10 p-5 w-1/2 border border-white/20 rounded-xl mx-auto">
+                                <div className="bg-transparent mt-10 p-5 w-2/3 xl:w-1/2 border border-white/20 rounded-xl mx-auto">
                                     <h1 className="px-5 text-2xl py-2 text-white/90 text-center mx-auto">
                                         Summary
                                     </h1>
@@ -128,13 +127,18 @@ const Chat = ({
                                         {/* Message bubble */}
                                         <div className="flex flex-col max-w-[70%]">
                                             <div
-                                                className={`max-w-xs md:max-w-md lg:max-w-lg px-4 py-2  rounded-2xl text-sm shadow-[0px_15px_5px_0px_rgba(0,0,0,0.6)] ${
+                                                className={`  max-w-xs md:max-w-md lg:max-w-lg px-4 py-2  rounded-2xl text-sm shadow-[0px_15px_5px_0px_rgba(0,0,0,0.6)] ${
                                                     isUser
                                                         ? "bg-gray-700 text-white rounded-br-none"
                                                         : "bg-[#2C2C2C] text-gray-100 rounded-bl-none"
                                                 }`}
                                             >
-                                                <p>{msg.content}</p>
+                                                <p
+                                                    className="ai-message text-sm leading-relaxed"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: msg.content,
+                                                    }}
+                                                />
                                             </div>
                                             <span className="block text-[10px] text-gray-400 mt-1 text-right">
                                                 {format(
@@ -187,7 +191,12 @@ const Chat = ({
                                                     <p
                                                         key={index}
                                                         className="text-xs border-1 px-2 py-1 rounded-lg border-white/20 text-white/60 cursor-pointer hover:text-white/80 hover:scale-102 transform duration-120"
-                                                        onClick={(e) => handleSendMessage(e, question)}
+                                                        onClick={(e) =>
+                                                            handleSendMessage(
+                                                                e,
+                                                                question
+                                                            )
+                                                        }
                                                     >
                                                         {question}
                                                     </p>

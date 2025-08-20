@@ -12,6 +12,7 @@ import {
     X,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import SubmitLoader from "./SubmitLoader.jsx";
 
 const DataSource = ({
     chats,
@@ -38,7 +39,9 @@ const DataSource = ({
             data.append("text", text);
         } else if (type === "url") {
             data.append("url", link);
-        } else if (["pdf", "docx", "csv"].includes(type)) {
+        } else if (type === "youtubeUrl") {
+            data.append("youtubeUrl", link);
+        } else if (["pdf", "docx", "csv", "pptx"].includes(type)) {
             data.append("file", file, file.name);
         }
         data.append("type", type);
@@ -47,7 +50,7 @@ const DataSource = ({
             setLoading(true);
             const res = await uploadDataSource(data);
             toast.success("Data Source Uploaded Successfully");
-            setSelectedChat(res.data.chat);
+            // setSelectedChat(res.data.chat);
 
             const updatedChats = await getAllChat();
             setchats(updatedChats.data);
@@ -57,10 +60,18 @@ const DataSource = ({
 
             setLoading(false);
             setIsAddDataSourceOpen(false);
+            setText("");
+            setLink("");
+            setFile(null);
+            setType("");
         } catch (err) {
             setLoading(false);
             toast.error("Failed to Upload Data Source");
             console.log(err);
+            setText("");
+            setLink("");
+            setFile(null);
+            setType("");
         }
     };
 
@@ -181,14 +192,14 @@ const DataSource = ({
 
                         <button
                             onClick={() => setIsAddDataSourceOpen(true)}
-                            className="px-5 py-2 rounded-xl cursor-pointer bg-[#212121] hover:bg-[#212121]/70 transform duration-75 text-white/80"
+                            className="px-5 py-2 rounded-xl sm:text-sm xl:text-normal  cursor-pointer bg-[#212121] hover:bg-[#212121]/70 transform duration-75 text-white/80"
                         >
                             Initiate new Chat By Add Data Source{" "}
                         </button>
                     </div>
                 </div>
             ) : loading ? (
-                <h1>Loading</h1>
+                <SubmitLoader />
             ) : (
                 <div className="h-full">
                     <div className="px-5 py-2 text-white/60 flex items-center justify-between">
@@ -348,6 +359,43 @@ const DataSource = ({
                                         }
                                     />
                                 </label>
+                                <label
+                                    style={{
+                                        cursor:
+                                            file !== null ||
+                                            link !== "" ||
+                                            text !== ""
+                                                ? "not-allowed"
+                                                : "text",
+                                    }}
+                                    className={`bg-black/50 px-3 cursor-pointer py-1 rounded-md text-sm text-white/70 flex items-center gap-2 hover:bg-black/70 ${
+                                        file?.type === "text/csv"
+                                            ? "border-2 border-green-500 rounded-full"
+                                            : ""
+                                    }`}
+                                    disabled={
+                                        file !== null ||
+                                        text !== "" ||
+                                        link !== ""
+                                    }
+                                >
+                                    <FileText size={14} />
+                                    PPT
+                                    <input
+                                        onChange={(e) => {
+                                            setFile(e.target.files[0]);
+                                            setType("pptx");
+                                        }}
+                                        type="file"
+                                        accept=".pptx"
+                                        className="hidden"
+                                        disabled={
+                                            file !== null ||
+                                            text !== "" ||
+                                            link !== ""
+                                        }
+                                    />
+                                </label>
                             </div>
                         </div>
                         <div
@@ -399,7 +447,7 @@ const DataSource = ({
                                         />
                                     )}
                                 </button>
-                                <button
+                                {/* <button
                                     style={{
                                         cursor:
                                             file !== null ||
@@ -431,7 +479,7 @@ const DataSource = ({
                                         <input
                                             onChange={(e) => {
                                                 setLink(e.target.value);
-                                                setType("url");
+                                                setType("youtubeUrl");
                                             }}
                                             type="url"
                                             value={link}
@@ -439,7 +487,7 @@ const DataSource = ({
                                             className="ml-2 bg-transparent outline-none text-white/70"
                                         />
                                     )}
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                         <button

@@ -2,6 +2,7 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { RecursiveUrlLoader } from "@langchain/community/document_loaders/web/recursive_url";
+import { PPTXLoader } from "@langchain/community/document_loaders/fs/pptx";
 import { compile } from "html-to-text";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
@@ -15,10 +16,10 @@ import { Chat } from "../models/chats.model.js";
 const openai = new OpenAI();
 
 const handleDocumentUpload = async (req) => {
-    const { type, text, url } = req.body;
+    const { type, text, url ,youtubeUrl} = req.body;
     const userId = req.user._id;
 
-    if (!type || !["text", "url", "pdf", "docx", "csv","youtubeUrl"].includes(type)) {
+    if (!type || !["text", "url", "pdf", "docx", "csv","youtubeUrl","pptx"].includes(type)) {
         throw new Error("Invalid or missing type");
     }
 
@@ -113,7 +114,19 @@ const handleDocumentUpload = async (req) => {
                 chat_id: chat._id,
             },
         }));
-    } else {
+    }else if(type === "pptx") {
+        const loader = new PPTXLoader(req.file.path);
+        docs = (await loader.load()).map((d) => ({
+            ...d,
+            metadata: {
+                ...(d.metadata || {}),
+                user_id: userId,
+                file_id: file._id,
+                chat_id: chat._id,
+            },
+        }));
+    }
+     else {
         throw new Error("Unsupported file type");
     }
 
@@ -136,7 +149,7 @@ const handleDocumentUpload = async (req) => {
         .join("\n\n");
 
     const SYSTEM_PROMPT = `
-        You are an expert ai assistant that generates short summary and concise chat title and also 2 similar questions  for the uploaded document."
+        You are an expert ai assistant that generates short summary and concise chat title(title must be short doest not excedd to 16letters) and also 2 similar questions  for the uploaded document."
     `;
     const response = await openai.chat.completions.create({
         model: "gpt-4.1-mini",

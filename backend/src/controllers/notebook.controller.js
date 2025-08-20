@@ -9,7 +9,7 @@ import { promises as fs } from "fs";
 
 const uploadSource = async (req, res) => {
     try {
-        console.log("File uploaded:", req.file);
+        
         const result = await handleDocumentUpload(req);
 
         // Remove uploaded file
