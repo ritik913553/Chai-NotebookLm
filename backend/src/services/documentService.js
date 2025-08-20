@@ -144,7 +144,7 @@ const handleDocumentUpload = async (req) => {
     // Generating Summary and title of the chat based on data
 
     const combinedText = docs
-        .slice(0, 5)
+        .slice(0, 3)
         .map((d) => d.pageContent)
         .join("\n\n");
 
@@ -152,7 +152,7 @@ const handleDocumentUpload = async (req) => {
         You are an expert ai assistant that generates short summary and concise chat title(title must be short doest not excedd to 16letters) and also 2 similar questions  for the uploaded document."
     `;
     const response = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
+        model: "gpt-4.1",
         messages: [
             { role: "system", content: SYSTEM_PROMPT },
             {
