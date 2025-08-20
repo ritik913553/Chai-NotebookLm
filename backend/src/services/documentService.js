@@ -7,6 +7,7 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { client, COLLECTION_NAME } from "../config/qdrantDB.config.js";
 import OpenAI from "openai";
+import { YoutubeLoader } from "@langchain/community/document_loaders/web/youtube";
 
 import { File } from "../models/files.model.js";
 import { Chat } from "../models/chats.model.js";
@@ -17,13 +18,9 @@ const handleDocumentUpload = async (req) => {
     const { type, text, url } = req.body;
     const userId = req.user._id;
 
-    if (!type || !["text", "url", "pdf", "docx", "csv"].includes(type)) {
+    if (!type || !["text", "url", "pdf", "docx", "csv","youtubeUrl"].includes(type)) {
         throw new Error("Invalid or missing type");
     }
-    console.log("Type:", type);
-    console.log("Url:", url);
-    console.log("Text:", text);
-    console.log("File:", req.file);
 
     let docs = [];
 
@@ -59,6 +56,20 @@ const handleDocumentUpload = async (req) => {
             extractor: compiledConvert,
             maxDepth: 3,
             excludeDirs: ["/docs/api/"],
+        });
+        docs = (await loader.load()).map((d) => ({
+            ...d,
+            metadata: {
+                ...(d.metadata || {}),
+                user_id: userId,
+                file_id: file._id,
+                chat_id: chat._id,
+            },
+        }));
+    } else if (type === "youtubeUrl") {
+        const loader = YoutubeLoader.createFromUrl(youtubeUrl, {
+            language: "en",
+            addVideoInfo: true,
         });
         docs = (await loader.load()).map((d) => ({
             ...d,
@@ -141,8 +152,8 @@ const handleDocumentUpload = async (req) => {
     });
 
     const assistantMessage = response.choices[0].message.content;
-    const { summary, title,similarQuestions } = JSON.parse(assistantMessage);
-    
+    const { summary, title, similarQuestions } = JSON.parse(assistantMessage);
+
     await Chat.updateOne(
         { _id: chat._id },
         {

@@ -6,7 +6,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: true,
     credentials: true,
   })
 );
@@ -24,14 +24,6 @@ app.use(
 );
 
 
-// -------------------code for deployment -------------------------
-if (process.env.NODE_ENV === "production") {
-  const dirPath = path.resolve();
-  app.use(express.static("./fronted/dist"));
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(dirPath, "./fronted/dist", "index.html"));
-  });
-}
 
 
 
